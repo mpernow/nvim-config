@@ -65,3 +65,30 @@ end
 vim.keymap.set("n", "<C-t>", ":lua TermToggle(20)<CR>", { noremap = true, silent = true })
 vim.keymap.set("i", "<C-t>", "<Esc>:lua TermToggle(20)<CR>", { noremap = true, silent = true })
 vim.keymap.set("t", "<C-t>", "<C-\\><C-n>:lua TermToggle(20)<CR>", { noremap = true, silent = true })
+
+-- Run code
+local run_code = function()
+  local filepath = vim.fn.expand("%")
+  local nameonly = vim.fn.expand("%:t")
+  local dirname = vim.fn.expand("%:h")
+  local extension = vim.fn.expand("%:e")
+  local basename = string.gsub(nameonly, "." .. extension, "")
+  local filetype = vim.bo.filetype
+
+  local cmd = nil
+
+  if filetype == "python" then
+    cmd = ":!python " .. filepath
+  elseif filetype == "cpp" then
+    cmd = "!cd " .. dirname .. " && g++ " .. nameonly .. " -o " .. basename .. " && echo && echo && ./" .. basename
+  end
+
+  if cmd then
+    vim.cmd("w")
+    vim.cmd(cmd)
+  else
+    print("No interpreter or compiler defined for filetype: '" .. filetype .. "'")
+  end
+end
+
+vim.keymap.set("n", "<F12>", run_code, { noremap = true, silent = true })
