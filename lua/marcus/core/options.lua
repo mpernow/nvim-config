@@ -91,4 +91,4 @@ local run_code = function()
   end
 end
 
-vim.keymap.set("n", "<F12>", run_code, { noremap = true, silent = true })
+vim.keymap.set("n", "<F12>", run_code, { noremap = true, silent = true, desc = "Build and run current file" })
