@@ -84,6 +84,13 @@ return {
           capabilities = capabilities,
         })
       end,
+      ["clangd"] = function()
+        lspconfig["clangd"].setup({
+          init_options = {
+            fallbackFlags = { '--std=c++20' }
+           },
+        })
+      end,
       ["lua_ls"] = function()
         -- configure lua server (with special settings)
         lspconfig["lua_ls"].setup({
