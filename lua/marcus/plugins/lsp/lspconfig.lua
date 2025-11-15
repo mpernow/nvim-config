@@ -74,46 +74,35 @@ return {
     local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
     for type, icon in pairs(signs) do
       local hl = "DiagnosticSign" .. type
-      vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
+      -- vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
     end
 
-    mason_lspconfig.setup_handlers({
-      -- default handler for installed servers
-      function(server_name)
-        lspconfig[server_name].setup({
-          capabilities = capabilities,
-        })
-      end,
-      ["clangd"] = function()
-        lspconfig["clangd"].setup({
-          init_options = {
-            fallbackFlags = { "--std=c++20" },
+    vim.lsp.config("pyright", {
+      capabilities = capabilities,
+    })
+
+    vim.lsp.config("clangd", {
+      init_options = { fallbackFlags = { "--std=c++20" } },
+    })
+
+    vim.lsp.config("lua_ls", {
+      capabilities = capabilities,
+      settings = {
+        Lua = {
+          -- make the language server recognize "vim" global
+          diagnostics = {
+            globals = { "vim" },
           },
-        })
-      end,
-      ["lua_ls"] = function()
-        -- configure lua server (with special settings)
-        lspconfig["lua_ls"].setup({
-          capabilities = capabilities,
-          settings = {
-            Lua = {
-              -- make the language server recognize "vim" global
-              diagnostics = {
-                globals = { "vim" },
-              },
-              completion = {
-                callSnippet = "Replace",
-              },
-            },
+          completion = {
+            callSnippet = "Replace",
           },
-        })
-      end,
-      ["pyright"] = function()
-        -- configure python server
-        lspconfig["pyright"].setup({
-          capabilities = capabilities,
-        })
-      end,
+        },
+      },
+    })
+
+    require("mason").setup()
+    require("mason-lspconfig").setup({
+      ensure_installed = { "lua_ls", "pyright", "clangd" },
     })
   end,
 }
