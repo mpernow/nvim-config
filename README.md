@@ -6,6 +6,7 @@ Some packages need to be installed separately:
 - `lazygit`
 - `tree-sitter-cli` (for `Comment`)
 - `nerdfonts`
+- `wl-clipboard`
 
 Other that are generally installed anyway:
 
