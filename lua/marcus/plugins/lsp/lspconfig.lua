@@ -67,9 +67,6 @@ return {
       end,
     })
 
-    -- used to enable autocompletion (assign to every lsp server config)
-    local capabilities = cmp_nvim_lsp.default_capabilities()
-
     -- Change the Diagnostic symbols in the sign column (gutter)
     local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
     for type, icon in pairs(signs) do
@@ -77,8 +74,28 @@ return {
       -- vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
     end
 
+    -- used to enable autocompletion (assign to every lsp server config)
+    local capabilities = cmp_nvim_lsp.default_capabilities()
+
+    local function on_attach(_, bufnr)
+      local function opts(desc)
+        return { buffer = bufnr, desc = "LSP " .. desc, noremap = true, silent = true }
+      end
+    end
+
+    local language_servers = { "pyright", "clangd", "lua_ls" }
+
+    for _, ls in ipairs(language_servers) do
+      vim.lsp.config(ls, {
+        capabilities = capabilities,
+        on_attach = on_attach,
+      })
+      vim.lsp.enable(ls)
+    end
+
     vim.lsp.config("pyright", {
       capabilities = capabilities,
+      -- TODO: Solve the venv issue
     })
 
     vim.lsp.config("clangd", {
@@ -102,7 +119,7 @@ return {
 
     require("mason").setup()
     require("mason-lspconfig").setup({
-      ensure_installed = { "lua_ls", "pyright", "clangd" },
+      ensure_installed = language_servers,
     })
   end,
 }
