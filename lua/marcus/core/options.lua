@@ -78,7 +78,8 @@ local run_code = function()
   local cmd = nil
 
   if filetype == "python" then
-    cmd = ":!python " .. filepath
+    -- TODO: run with pipenv if a pipfile exists, else just python
+    cmd = ":!pipenv run python " .. filepath
   elseif filetype == "cpp" then
     cmd = "!cd " .. dirname .. " && g++ " .. nameonly .. " -o " .. basename .. " && echo && echo && ./" .. basename
   end
