@@ -99,6 +99,11 @@ return {
     })
 
     vim.lsp.config("clangd", {
+      cmd = {
+        "clangd",
+        "--background-index",
+        "--compile-commands-dir=build/debug/",
+      },
       init_options = { fallbackFlags = { "--std=c++20" } },
     })
 
