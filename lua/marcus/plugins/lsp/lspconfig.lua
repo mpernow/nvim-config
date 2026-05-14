@@ -2,18 +2,15 @@ return {
   "neovim/nvim-lspconfig",
   event = { "BufReadPre", "BufNewFile" },
   dependencies = {
+    "mason-org/mason.nvim",
+    "mason-org/mason-lspconfig.nvim",
     "hrsh7th/cmp-nvim-lsp",
     { "antosha417/nvim-lsp-file-operations", config = true },
-    { "folke/neodev.nvim", opts = {} },
+    { "folke/lazydev.nvim", opts = {} },
   },
   config = function()
-    -- import lspconfig plugin
-    local lspconfig = require("lspconfig")
-
-    -- import mason_lspconfig plugin
+    local mason = require("mason")
     local mason_lspconfig = require("mason-lspconfig")
-
-    -- import cmp-nvim-lsp plugin
     local cmp_nvim_lsp = require("cmp_nvim_lsp")
 
     local keymap = vim.keymap -- for conciseness
@@ -63,68 +60,73 @@ return {
         keymap.set("n", "K", vim.lsp.buf.hover, opts) -- show documentation for what is under cursor
 
         opts.desc = "Restart LSP"
-        keymap.set("n", "<leader>rs", ":LspRestart<CR>", opts) -- mapping to restart lsp if necessary
+        keymap.set("n", "<leader>rs", "<cmd>LspRestart<CR>", opts) -- mapping to restart lsp if necessary
       end,
     })
 
-    -- Change the Diagnostic symbols in the sign column (gutter)
-    local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
-    for type, icon in pairs(signs) do
-      local hl = "DiagnosticSign" .. type
-      -- vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
-    end
-
-    -- used to enable autocompletion (assign to every lsp server config)
-    local capabilities = cmp_nvim_lsp.default_capabilities()
-
-    local function on_attach(_, bufnr)
-      local function opts(desc)
-        return { buffer = bufnr, desc = "LSP " .. desc, noremap = true, silent = true }
-      end
-    end
-
-    local language_servers = { "pyright", "clangd", "lua_ls" }
-
-    for _, ls in ipairs(language_servers) do
-      vim.lsp.config(ls, {
-        capabilities = capabilities,
-        on_attach = on_attach,
-      })
-      vim.lsp.enable(ls)
-    end
-
-    vim.lsp.config("pyright", {
-      capabilities = capabilities,
-      -- TODO: Solve the venv issue
-    })
-
-    vim.lsp.config("clangd", {
-      cmd = {
-        "clangd",
-        "--background-index",
-        "--compile-commands-dir=build/debug/",
+    vim.diagnostic.config({
+      float = {
+        border = "rounded",
       },
-      init_options = { fallbackFlags = { "--std=c++20" } },
-    })
 
-    vim.lsp.config("lua_ls", {
-      capabilities = capabilities,
-      settings = {
-        Lua = {
-          -- make the language server recognize "vim" global
-          diagnostics = {
-            globals = { "vim" },
-          },
-          completion = {
-            callSnippet = "Replace",
-          },
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = " ",
+          [vim.diagnostic.severity.WARN] = " ",
+          [vim.diagnostic.severity.HINT] = "󰠠 ",
+          [vim.diagnostic.severity.INFO] = " ",
         },
       },
     })
 
-    require("mason").setup()
-    require("mason-lspconfig").setup({
-      ensure_installed = language_servers,
+    -- used to enable autocompletion (assign to every lsp server config)
+    local capabilities = cmp_nvim_lsp.default_capabilities()
+
+    mason.setup()
+
+    mason_lspconfig.setup({
+      ensure_installed = {
+        "pyright",
+        "clangd",
+        "lua_ls",
+      },
     })
+
+    local servers = {
+      pyright = {},
+
+      clangd = {
+        cmd = {
+          "clangd",
+          "--background-index",
+          "--compile-commands-dir=build/debug/",
+        },
+
+        init_options = {
+          fallbackFlags = { "--std=c++20" },
+        },
+      },
+
+      lua_ls = {
+        settings = {
+          Lua = {
+            diagnostics = {
+              globals = { "vim" },
+            },
+
+            completion = {
+              callSnippet = "Replace",
+            },
+          },
+        },
+      },
+    }
+
+    for server_name, config in pairs(servers) do
+      config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
+
+      vim.lsp.config(server_name, config)
+      vim.lsp.enable(server_name)
+    end
   end,
 }
