@@ -7,6 +7,7 @@ Some packages need to be installed separately:
 - `tree-sitter-cli` (for `Comment`)
 - `nerdfonts`
 - `wl-clipboard`
+- `fdfind`
 
 Other that are generally installed anyway:
 

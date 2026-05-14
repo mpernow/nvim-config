@@ -93,7 +93,18 @@ return {
     })
 
     local servers = {
-      pyright = {},
+      pyright = {
+        settings = {
+          python = {
+            analysis = {
+              autoSearchPaths = true,
+              diagnosticMode = "workspace",
+              extraPaths = { "src" },
+              useLibraryCodeForTypes = true,
+            },
+          },
+        },
+      },
 
       clangd = {
         cmd = {
